@@ -9,6 +9,8 @@
 import Foundation
 import AVFoundation
 import CoreLocation
+import UIKit  // NEW: for UIAccessibility
+
 
 extension Notification.Name {
     static let audioEngineStateChanged = Notification.Name("GDAAudioEngineStateChanged")
