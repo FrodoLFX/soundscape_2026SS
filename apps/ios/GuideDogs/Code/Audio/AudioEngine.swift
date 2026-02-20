@@ -302,7 +302,10 @@ class AudioEngine: AudioEngineProtocol {
     /// the node connections in the audio engine's node graph.
     private func connectNodes() {
         // Update mono mode property
-        isInMonoMode = engine.outputNode.outputFormat(forBus: 0).channelCount == 1 || UIAccessibility.isMonoAudioEnabled
+        let outputIsSpeaker = sessionManager.isSpeakerOutput // NEW: treat built-in speaker as mono
+        isInMonoMode = engine.outputNode.outputFormat(forBus: 0).channelCount == 1
+            || UIAccessibility.isMonoAudioEnabled
+            || outputIsSpeaker
         GDLogAudioVerbose("Connecting audio graph in \(isInMonoMode ? "2D" : "3D") mode (from \(Thread.current.threadName))")
         
         // Access the `mainMixerNode` property so that the node gets constructed by the audio engine before we
