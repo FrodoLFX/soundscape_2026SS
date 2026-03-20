@@ -20,6 +20,12 @@ extension Notification.Name {
     static let beaconGainChanged = Notification.Name("GDABeaconGainChanged")
     
     static let previewIntersectionsIncludeUnnamedRoadsDidChange = Notification.Name("PreviewIntersectionsIncludeUnnamedRoadsDidChange")
+    // 新增通知：呼叫前缀声音开关改变
+    static let calloutSoundsEnabledChanged = Notification.Name("GDACalloutSoundsEnabledChanged")
+        // 新增通知：呼叫延迟开关改变
+    static let calloutDelayEnabledChanged = Notification.Name("GDACalloutDelayEnabledChanged")
+    }
+    }
 }
 
 class SettingsContext {
@@ -63,7 +69,8 @@ class SettingsContext {
         fileprivate static let ttsGain = "GDATTSAudioGain"
         fileprivate static let beaconGain = "GDABeaconAudioGain"
         fileprivate static let afxGain = "GDAAFXAudioGain"
-        
+        fileprivate static let calloutSoundsEnabled  = "GDACalloutSoundsEnabled"
+        fileprivate static let calloutDelayEnabled   = "GDACalloutDelayEnabled"
         // MARK: Notification Keys
         
         static let enabled = "GDAEnabled"
@@ -84,6 +91,8 @@ class SettingsContext {
     init() {
         // register default values
         userDefaults.register(defaults: [
+            Keys.calloutSoundsEnabled: true,
+            Keys.calloutDelayEnabled: true,
             Keys.appUseCount: 0,
             Keys.newFeaturesLastDisplayedVersion: "0.0.0",
             Keys.metricUnits: Locale.current.usesMetricSystem,
@@ -415,6 +424,29 @@ class SettingsContext {
 }
 
 extension SettingsContext: AutoCalloutSettingsProvider {
+    var calloutSoundsEnabled: Bool {
+            get {
+                return userDefaults.bool(forKey: Keys.calloutSoundsEnabled)
+            }
+            set {
+                userDefaults.set(newValue, forKey: Keys.calloutSoundsEnabled)
+                NotificationCenter.default.post(name: .calloutSoundsEnabledChanged,
+                                                object: self,
+                                                userInfo: [Keys.enabled: newValue])
+            }
+        }
+
+        var calloutDelayEnabled: Bool {
+            get {
+                return userDefaults.bool(forKey: Keys.calloutDelayEnabled)
+            }
+            set {
+                userDefaults.set(newValue, forKey: Keys.calloutDelayEnabled)
+                NotificationCenter.default.post(name: .calloutDelayEnabledChanged,
+                                                object: self,
+                                                userInfo: [Keys.enabled: newValue])
+            }
+        }
     var automaticCalloutsEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.automaticCalloutsEnabled)

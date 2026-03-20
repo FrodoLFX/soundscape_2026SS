@@ -156,7 +156,7 @@ struct POICallout: POICalloutProtocol {
         
         var sounds = [Sound]()
         
-        if includePrefixSound {
+        if includePrefixSound && SettingsContext.shared.calloutSoundsEnabled {
             sounds.append(GlyphSound(category.glyph, at: soundLocation))
         }
         

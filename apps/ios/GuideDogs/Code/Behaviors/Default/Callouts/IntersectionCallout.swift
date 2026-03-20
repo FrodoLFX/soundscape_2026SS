@@ -25,7 +25,9 @@ struct IntersectionCallout: CalloutProtocol {
         return "intersection"
     }
     
-    let includePrefixSound = true
+    var includePrefixSound: Bool {
+        return SettingsContext.shared.calloutSoundsEnabled
+    }
     
     var prefixSound: Sound? {
         return GlyphSound(SuperCategory.intersections.glyph)

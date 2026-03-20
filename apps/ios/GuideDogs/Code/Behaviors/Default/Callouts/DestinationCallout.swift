@@ -23,7 +23,9 @@ struct DestinationCallout: POICalloutProtocol {
         return "destination"
     }
     
-    let includePrefixSound = true
+    var includePrefixSound: Bool {
+        return SettingsContext.shared.calloutSoundsEnabled
+    }
     
     var prefixSound: Sound? {
         return GlyphSound(.startJourney)

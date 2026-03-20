@@ -26,7 +26,9 @@ class GlyphCallout: CalloutProtocol {
         return "glyph"
     }
     
-    let includePrefixSound = true
+    var includePrefixSound: Bool {
+        return SettingsContext.shared.calloutSoundsEnabled
+    }
     
     var prefixSound: Sound? {
         return nil

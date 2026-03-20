@@ -25,7 +25,9 @@ class StringCallout: CalloutProtocol {
         return "string"
     }
     
-    let includePrefixSound = true
+    var includePrefixSound: Bool {
+        return SettingsContext.shared.calloutSoundsEnabled
+    }
     
     var prefixSound: Sound? {
         return nil
