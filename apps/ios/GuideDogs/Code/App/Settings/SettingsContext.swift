@@ -536,3 +536,274 @@ extension SettingsContext: AutoCalloutSettingsProvider {
         }
     }
 }
+// MARK: - Convenience utility methods
+extension SettingsContext {
+    /// Export relevant Soundscape settings into a dictionary.  This helper returns a dictionary
+    /// containing all of the user‑tweakable settings maintained by `SettingsContext`.  It can be
+    /// used to persist settings to disk or transmit them across devices.  Only values backed by
+    /// known keys defined in `SettingsContext.Keys` will be included in the exported dictionary.
+    ///
+    /// - Returns: A dictionary where each key corresponds to a user default key and each value is
+    ///            the current value stored in `UserDefaults`.
+    func exportSettings() -> [String: Any] {
+        var settings: [String: Any] = [:]
+        // List all keys that should be exported. Adding a key here will include it in export.
+        let exportKeys: [String] = [
+            Keys.calloutSoundsEnabled,
+            Keys.calloutDelayEnabled,
+            Keys.appUseCount,
+            Keys.newFeaturesLastDisplayedVersion,
+            Keys.metricUnits,
+            Keys.locale,
+            Keys.voiceID,
+            Keys.speakingRate,
+            Keys.beaconVolume,
+            Keys.ttsVolume,
+            Keys.otherVolume,
+            Keys.telemetryOptout,
+            Keys.selectedBeaconName,
+            Keys.useOldBeacon,
+            Keys.playBeaconStartEndMelody,
+            Keys.automaticCalloutsEnabled,
+            Keys.shakeCalloutsEnabled,
+            Keys.sensePlace,
+            Keys.senseLandmark,
+            Keys.senseMobility,
+            Keys.senseInformation,
+            Keys.senseSafety,
+            Keys.senseIntersection,
+            Keys.senseDestination,
+            Keys.previewIntersectionsIncludeUnnamedRoads,
+            Keys.audioSessionMixesWithOthers,
+            Keys.markerSortStyle,
+            Keys.leaveImmediateVicinityDistance,
+            Keys.enterImmediateVicinityDistance,
+            Keys.ttsGain,
+            Keys.beaconGain,
+            Keys.afxGain,
+            Keys.apnsDeviceToken,
+            Keys.pushNotificationTags
+        ]
+        for key in exportKeys {
+            // If the object exists in user defaults, include it in the export dictionary
+            if let value = userDefaults.object(forKey: key) {
+                settings[key] = value
+            }
+        }
+        return settings
+    }
+
+    /// Import settings previously exported using `exportSettings()`.  Any keys that match those
+    /// defined in `SettingsContext.Keys` will be applied to `UserDefaults` and trigger the
+    /// associated property observers (for example, posting notifications).  Keys not recognised by
+    /// this context are ignored.
+    ///
+    /// - Parameter settings: A dictionary of key/value pairs representing user defaults to apply.
+    func importSettings(_ settings: [String: Any]) {
+        for (key, value) in settings {
+            switch key {
+            case Keys.calloutSoundsEnabled:
+                if let boolValue = value as? Bool {
+                    self.calloutSoundsEnabled = boolValue
+                }
+            case Keys.calloutDelayEnabled:
+                if let boolValue = value as? Bool {
+                    self.calloutDelayEnabled = boolValue
+                }
+            case Keys.appUseCount:
+                if let intValue = value as? Int {
+                    self.appUseCount = intValue
+                }
+            case Keys.newFeaturesLastDisplayedVersion:
+                if let stringValue = value as? String {
+                    self.newFeaturesLastDisplayedVersion = stringValue
+                }
+            case Keys.metricUnits:
+                if let boolValue = value as? Bool {
+                    self.metricUnits = boolValue
+                }
+            case Keys.locale:
+                if let identifier = value as? String {
+                    self.locale = Locale(identifier: identifier)
+                } else {
+                    self.locale = nil
+                }
+            case Keys.voiceID:
+                self.voiceId = value as? String
+            case Keys.speakingRate:
+                if let floatValue = value as? Float {
+                    self.speakingRate = floatValue
+                }
+            case Keys.beaconVolume:
+                if let floatValue = value as? Float {
+                    self.beaconVolume = floatValue
+                }
+            case Keys.ttsVolume:
+                if let floatValue = value as? Float {
+                    self.ttsVolume = floatValue
+                }
+            case Keys.otherVolume:
+                if let floatValue = value as? Float {
+                    self.otherVolume = floatValue
+                }
+            case Keys.telemetryOptout:
+                if let boolValue = value as? Bool {
+                    self.telemetryOptout = boolValue
+                }
+            case Keys.selectedBeaconName:
+                if let stringValue = value as? String {
+                    self.selectedBeacon = stringValue
+                }
+            case Keys.useOldBeacon:
+                if let boolValue = value as? Bool {
+                    self.userDefaults.set(boolValue, forKey: key)
+                }
+            case Keys.playBeaconStartEndMelody:
+                if let boolValue = value as? Bool {
+                    self.playBeaconStartAndEndMelodies = boolValue
+                }
+            case Keys.automaticCalloutsEnabled:
+                if let boolValue = value as? Bool {
+                    self.automaticCalloutsEnabled = boolValue
+                }
+            case Keys.shakeCalloutsEnabled:
+                if let boolValue = value as? Bool {
+                    self.shakeCalloutsEnabled = boolValue
+                }
+            case Keys.sensePlace:
+                if let boolValue = value as? Bool {
+                    self.placeSenseEnabled = boolValue
+                }
+            case Keys.senseLandmark:
+                if let boolValue = value as? Bool {
+                    self.landmarkSenseEnabled = boolValue
+                }
+            case Keys.senseMobility:
+                if let boolValue = value as? Bool {
+                    self.mobilitySenseEnabled = boolValue
+                }
+            case Keys.senseInformation:
+                if let boolValue = value as? Bool {
+                    self.informationSenseEnabled = boolValue
+                }
+            case Keys.senseSafety:
+                if let boolValue = value as? Bool {
+                    self.safetySenseEnabled = boolValue
+                }
+            case Keys.senseIntersection:
+                if let boolValue = value as? Bool {
+                    self.intersectionSenseEnabled = boolValue
+                }
+            case Keys.senseDestination:
+                if let boolValue = value as? Bool {
+                    self.destinationSenseEnabled = boolValue
+                }
+            case Keys.previewIntersectionsIncludeUnnamedRoads:
+                if let boolValue = value as? Bool {
+                    self.previewIntersectionsIncludeUnnamedRoads = boolValue
+                }
+            case Keys.audioSessionMixesWithOthers:
+                if let boolValue = value as? Bool {
+                    self.audioSessionMixesWithOthers = boolValue
+                }
+            case Keys.markerSortStyle:
+                if let rawValue = value as? String, let sort = SortStyle(rawValue: rawValue) {
+                    self.defaultMarkerSortStyle = sort
+                }
+            case Keys.leaveImmediateVicinityDistance:
+                if let doubleValue = value as? Double {
+                    self.leaveImmediateVicinityDistance = doubleValue
+                }
+            case Keys.enterImmediateVicinityDistance:
+                if let doubleValue = value as? Double {
+                    self.enterImmediateVicinityDistance = doubleValue
+                }
+            case Keys.ttsGain:
+                if let floatValue = value as? Float {
+                    self.ttsGain = floatValue
+                }
+            case Keys.beaconGain:
+                if let floatValue = value as? Float {
+                    self.beaconGain = floatValue
+                }
+            case Keys.afxGain:
+                if let floatValue = value as? Float {
+                    self.afxGain = floatValue
+                }
+            case Keys.apnsDeviceToken:
+                if let data = value as? Data {
+                    self.apnsDeviceToken = data
+                }
+            case Keys.pushNotificationTags:
+                if let array = value as? [String] {
+                    self.pushNotificationTags = Set(array)
+                }
+            default:
+                // Ignore unknown keys
+                continue
+            }
+        }
+    }
+
+    /// Toggle all sense categories on or off with a single call.  Setting this property will update
+    /// the individual sense settings (place, landmark, mobility, information, safety, intersection,
+    /// and destination) and post the appropriate notifications.
+    ///
+    /// - Parameter enabled: A Boolean value indicating whether all sense categories should be enabled.
+    func setAllSensesEnabled(_ enabled: Bool) {
+        self.placeSenseEnabled = enabled
+        self.landmarkSenseEnabled = enabled
+        self.mobilitySenseEnabled = enabled
+        self.informationSenseEnabled = enabled
+        self.safetySenseEnabled = enabled
+        self.intersectionSenseEnabled = enabled
+        self.destinationSenseEnabled = enabled
+    }
+
+    /// Reset all user‑tweakable settings to their default values.  This method removes each
+    /// supported key from `UserDefaults` so that the default values (registered in the initializer)
+    /// are used the next time the values are read.
+    func resetToDefaults() {
+        let keysToReset: [String] = [
+            Keys.calloutSoundsEnabled,
+            Keys.calloutDelayEnabled,
+            Keys.appUseCount,
+            Keys.newFeaturesLastDisplayedVersion,
+            Keys.metricUnits,
+            Keys.locale,
+            Keys.voiceID,
+            Keys.speakingRate,
+            Keys.beaconVolume,
+            Keys.ttsVolume,
+            Keys.otherVolume,
+            Keys.telemetryOptout,
+            Keys.selectedBeaconName,
+            Keys.useOldBeacon,
+            Keys.playBeaconStartEndMelody,
+            Keys.automaticCalloutsEnabled,
+            Keys.shakeCalloutsEnabled,
+            Keys.sensePlace,
+            Keys.senseLandmark,
+            Keys.senseMobility,
+            Keys.senseInformation,
+            Keys.senseSafety,
+            Keys.senseIntersection,
+            Keys.senseDestination,
+            Keys.previewIntersectionsIncludeUnnamedRoads,
+            Keys.audioSessionMixesWithOthers,
+            Keys.markerSortStyle,
+            Keys.leaveImmediateVicinityDistance,
+            Keys.enterImmediateVicinityDistance,
+            Keys.ttsGain,
+            Keys.beaconGain,
+            Keys.afxGain,
+            Keys.apnsDeviceToken,
+            Keys.pushNotificationTags
+        ]
+        for key in keysToReset {
+            userDefaults.removeObject(forKey: key)
+        }
+        // Reset any cached values such as locale
+        _locale = nil
+    }
+}
