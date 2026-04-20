@@ -119,7 +119,8 @@ class AutoCalloutGenerator: AutomaticGenerator, ManualGenerator {
     
     private let inVehicleBeaconUpdateDistance: CLLocationDistance = 1000.0 // meters
     private var calloutDelay: TimeInterval {
-        return settings.calloutDelayEnabled ? 0.75 : 0.0
+        guard settings.calloutDelayEnabled else { return 0.0 }
+		return max(settings.calloutDelayInterval, 0.0)
     }
     
     // MARK: - Private Properties
