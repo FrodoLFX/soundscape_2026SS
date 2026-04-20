@@ -18,21 +18,19 @@ extension Notification.Name {
     static let ttsVolumeChanged = Notification.Name("GDATTSVolumeChanged")
     static let otherVolumeChanged = Notification.Name("GDAOtherVolumeChanged")
     static let beaconGainChanged = Notification.Name("GDABeaconGainChanged")
-    
+
     static let previewIntersectionsIncludeUnnamedRoadsDidChange = Notification.Name("PreviewIntersectionsIncludeUnnamedRoadsDidChange")
-    // 新增通知：呼叫前缀声音开关改变
+
     static let calloutSoundsEnabledChanged = Notification.Name("GDACalloutSoundsEnabledChanged")
-        // 新增通知：呼叫延迟开关改变
     static let calloutDelayEnabledChanged = Notification.Name("GDACalloutDelayEnabledChanged")
-    }
-    }
+    static let calloutDelayIntervalChanged = Notification.Name("GDACalloutDelayIntervalChanged")
 }
 
 class SettingsContext {
-    
+
     struct Keys {
         // MARK: Internal UserDefaults Keys
-        
+
         /// Number of times the user has open the app
         fileprivate static let appUseCount               = "GDAAppUseCount"
         fileprivate static let newFeaturesLastDisplayedVersion = "GDANewFeaturesLastDisplayedVersion"
@@ -65,34 +63,40 @@ class SettingsContext {
         fileprivate static let markerSortStyle           = "GDAMarkerSortStyle"
         fileprivate static let leaveImmediateVicinityDistance = "GDALeaveImmediateVicinityDistance"
         fileprivate static let enterImmediateVicinityDistance = "GDAEnterImmediateVicinityDistance"
-        
-        fileprivate static let ttsGain = "GDATTSAudioGain"
-        fileprivate static let beaconGain = "GDABeaconAudioGain"
-        fileprivate static let afxGain = "GDAAFXAudioGain"
-        fileprivate static let calloutSoundsEnabled  = "GDACalloutSoundsEnabled"
-        fileprivate static let calloutDelayEnabled   = "GDACalloutDelayEnabled"
+
+        fileprivate static let ttsGain                   = "GDATTSAudioGain"
+        fileprivate static let beaconGain                = "GDABeaconAudioGain"
+        fileprivate static let afxGain                   = "GDAAFXAudioGain"
+
+        fileprivate static let calloutSoundsEnabled      = "GDACalloutSoundsEnabled"
+        fileprivate static let calloutDelayEnabled       = "GDACalloutDelayEnabled"
+        fileprivate static let calloutDelayInterval      = "GDACalloutDelayInterval"
+
         // MARK: Notification Keys
-        
+
         static let enabled = "GDAEnabled"
+        static let interval = "GDACalloutDelayIntervalValue"
     }
-    
+
     // MARK: Shared Instance
-    
+
     static let shared = SettingsContext()
-    
+
     // MARK: User Defaults
-    
+
     private var userDefaults: UserDefaults {
         return UserDefaults.standard
     }
-    
+
     // MARK: Initialization
-    
+
     init() {
         // register default values
         userDefaults.register(defaults: [
             Keys.calloutSoundsEnabled: true,
             Keys.calloutDelayEnabled: true,
+            Keys.calloutDelayInterval: 1.5,
+
             Keys.appUseCount: 0,
             Keys.newFeaturesLastDisplayedVersion: "0.0.0",
             Keys.metricUnits: Locale.current.usesMetricSystem,
@@ -122,10 +126,10 @@ class SettingsContext {
             Keys.leaveImmediateVicinityDistance: 30.0,
             Keys.enterImmediateVicinityDistance: 15.0
         ])
-        
+
         resetLocaleIfNeeded()
     }
-    
+
     private func resetLocaleIfNeeded() {
         // If the user has selected a locale in the first launch experience, but did not finish the first
         // launch experience and terminated the app half way, reset the chosen locale when re-opening the app.
@@ -133,9 +137,9 @@ class SettingsContext {
             locale = nil
         }
     }
-    
+
     // MARK: Properties
-    
+
     var appUseCount: Int {
         get {
             return userDefaults.integer(forKey: Keys.appUseCount)
@@ -143,21 +147,21 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.appUseCount)
         }
     }
-    
+
     var newFeaturesLastDisplayedVersion: String {
         get {
             guard let versionString = userDefaults.string(forKey: Keys.newFeaturesLastDisplayedVersion) else {
                 userDefaults.set("0.0.0", forKey: Keys.newFeaturesLastDisplayedVersion)
                 return "0.0.0"
             }
-            
+
             return versionString
         }
         set {
             userDefaults.set(newValue, forKey: Keys.newFeaturesLastDisplayedVersion)
         }
     }
-    
+
     var clientId: String {
         get {
             if let clientId = userDefaults.string(forKey: Keys.clientIdentifier) {
@@ -172,7 +176,7 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.clientIdentifier)
         }
     }
-    
+
     var servicesHostName: String {
         get {
             // Allow URL to be reset to default when it is cleared
@@ -188,7 +192,7 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.servicesHostName)
         }
     }
-    
+
     var metricUnits: Bool {
         get {
             return userDefaults.bool(forKey: Keys.metricUnits)
@@ -197,21 +201,21 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.metricUnits)
         }
     }
-    
+
     /// Cache settings `locale`, as it seems to be expensive to create.
     private var _locale: Locale?
-    
+
     var locale: Locale? {
         get {
             guard let identifier = userDefaults.string(forKey: Keys.locale) else { return nil }
-            
+
             if let locale = _locale, locale.identifier == identifier {
                 return locale
             }
-            
+
             let locale = Locale(identifier: identifier)
             _locale = locale
-            
+
             return locale
         }
         set(newValue) {
@@ -222,7 +226,7 @@ class SettingsContext {
             }
         }
     }
-    
+
     var speakingRate: Float {
         get {
             return userDefaults.float(forKey: Keys.speakingRate)
@@ -231,7 +235,7 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.speakingRate)
         }
     }
-    
+
     var beaconVolume: Float {
         get {
             return userDefaults.float(forKey: Keys.beaconVolume)
@@ -241,7 +245,7 @@ class SettingsContext {
             NotificationCenter.default.post(name: .beaconVolumeChanged, object: nil)
         }
     }
-    
+
     var ttsVolume: Float {
         get {
             return userDefaults.float(forKey: Keys.ttsVolume)
@@ -251,7 +255,7 @@ class SettingsContext {
             NotificationCenter.default.post(name: .ttsVolumeChanged, object: nil)
         }
     }
-    
+
     var otherVolume: Float {
         get {
             return userDefaults.float(forKey: Keys.otherVolume)
@@ -261,7 +265,7 @@ class SettingsContext {
             NotificationCenter.default.post(name: .otherVolumeChanged, object: nil)
         }
     }
-    
+
     var ttsGain: Float {
         get {
             return userDefaults.float(forKey: Keys.ttsGain)
@@ -270,7 +274,7 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.ttsGain)
         }
     }
-    
+
     var beaconGain: Float {
         get {
             return userDefaults.float(forKey: Keys.beaconGain)
@@ -280,7 +284,7 @@ class SettingsContext {
             NotificationCenter.default.post(name: .beaconGainChanged, object: nil)
         }
     }
-    
+
     var afxGain: Float {
         get {
             return userDefaults.float(forKey: Keys.afxGain)
@@ -289,7 +293,7 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.afxGain)
         }
     }
-    
+
     var telemetryOptout: Bool {
         get {
             return userDefaults.bool(forKey: Keys.telemetryOptout)
@@ -298,18 +302,20 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.telemetryOptout)
         }
     }
-    
+
     var previewIntersectionsIncludeUnnamedRoads: Bool {
         get {
             return userDefaults.bool(forKey: Keys.previewIntersectionsIncludeUnnamedRoads)
         }
         set(newValue) {
             userDefaults.set(newValue, forKey: Keys.previewIntersectionsIncludeUnnamedRoads)
-            
-            NotificationCenter.default.post(name: .previewIntersectionsIncludeUnnamedRoadsDidChange, object: self, userInfo: [Keys.enabled: newValue])
+
+            NotificationCenter.default.post(name: .previewIntersectionsIncludeUnnamedRoadsDidChange,
+                                            object: self,
+                                            userInfo: [Keys.enabled: newValue])
         }
     }
-    
+
     var audioSessionMixesWithOthers: Bool {
         get {
             return userDefaults.bool(forKey: Keys.audioSessionMixesWithOthers)
@@ -318,15 +324,15 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.audioSessionMixesWithOthers)
         }
     }
-    
+
     // MARK: Audio Beacon
-    
+
     var selectedBeacon: String {
         get {
             if let selected = userDefaults.string(forKey: Keys.selectedBeaconName) {
                 return selected
             }
-            
+
             // If the user hasn't selected a new beacon yet, default to the beacon they previously used
             if userDefaults.bool(forKey: Keys.useOldBeacon) {
                 return ClassicBeacon.description
@@ -338,7 +344,7 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.selectedBeaconName)
         }
     }
-    
+
     var playBeaconStartAndEndMelodies: Bool {
         get {
             return userDefaults.bool(forKey: Keys.playBeaconStartEndMelody)
@@ -347,9 +353,9 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.playBeaconStartEndMelody)
         }
     }
-    
+
     // MARK: Push Notifications
-    
+
     var apnsDeviceToken: Data? {
         get {
             return userDefaults.data(forKey: Keys.apnsDeviceToken)
@@ -358,7 +364,7 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.apnsDeviceToken)
         }
     }
-    
+
     var pushNotificationTags: Set<String>? {
         get {
             guard let array = userDefaults.array(forKey: Keys.pushNotificationTags) as? [String] else { return nil }
@@ -372,9 +378,9 @@ class SettingsContext {
             }
         }
     }
-    
+
     // MARK: Apple TTS
-    
+
     var voiceId: String? {
         get {
             return userDefaults.string(forKey: Keys.voiceID)
@@ -383,23 +389,23 @@ class SettingsContext {
             userDefaults.set(newValue, forKey: Keys.voiceID)
         }
     }
-    
+
     // MARK: Markers and Routes List
-    
+
     var defaultMarkerSortStyle: SortStyle {
         get {
             guard let sortString = userDefaults.string(forKey: Keys.markerSortStyle),
                   let sort = SortStyle(rawValue: sortString) else {
                 return SortStyle.distance
             }
-            
+
             return sort
         }
         set {
             userDefaults.set(newValue.rawValue, forKey: Keys.markerSortStyle)
         }
     }
-    
+
     var leaveImmediateVicinityDistance: CLLocationDistance {
         get {
             return userDefaults.double(forKey: Keys.leaveImmediateVicinityDistance) as CLLocationDistance
@@ -410,7 +416,7 @@ class SettingsContext {
             userDefaults.set(max(newValue - 15.0, 0.0), forKey: Keys.enterImmediateVicinityDistance)
         }
     }
-    
+
     var enterImmediateVicinityDistance: CLLocationDistance {
         get {
             return userDefaults.double(forKey: Keys.enterImmediateVicinityDistance) as CLLocationDistance
@@ -425,49 +431,67 @@ class SettingsContext {
 
 extension SettingsContext: AutoCalloutSettingsProvider {
     var calloutSoundsEnabled: Bool {
-            get {
-                return userDefaults.bool(forKey: Keys.calloutSoundsEnabled)
-            }
-            set {
-                userDefaults.set(newValue, forKey: Keys.calloutSoundsEnabled)
-                NotificationCenter.default.post(name: .calloutSoundsEnabledChanged,
-                                                object: self,
-                                                userInfo: [Keys.enabled: newValue])
-            }
+        get {
+            return userDefaults.bool(forKey: Keys.calloutSoundsEnabled)
         }
+        set {
+            userDefaults.set(newValue, forKey: Keys.calloutSoundsEnabled)
+            NotificationCenter.default.post(name: .calloutSoundsEnabledChanged,
+                                            object: self,
+                                            userInfo: [Keys.enabled: newValue])
+        }
+    }
 
-        var calloutDelayEnabled: Bool {
-            get {
-                return userDefaults.bool(forKey: Keys.calloutDelayEnabled)
-            }
-            set {
-                userDefaults.set(newValue, forKey: Keys.calloutDelayEnabled)
-                NotificationCenter.default.post(name: .calloutDelayEnabledChanged,
-                                                object: self,
-                                                userInfo: [Keys.enabled: newValue])
-            }
+    var calloutDelayEnabled: Bool {
+        get {
+            return userDefaults.bool(forKey: Keys.calloutDelayEnabled)
         }
+        set {
+            userDefaults.set(newValue, forKey: Keys.calloutDelayEnabled)
+            NotificationCenter.default.post(name: .calloutDelayEnabledChanged,
+                                            object: self,
+                                            userInfo: [Keys.enabled: newValue])
+        }
+    }
+
+    var calloutDelayInterval: TimeInterval {
+        get {
+            return userDefaults.double(forKey: Keys.calloutDelayInterval)
+        }
+        set {
+            let clampedValue = min(max(newValue, 0.0), 10.0)
+            userDefaults.set(clampedValue, forKey: Keys.calloutDelayInterval)
+            NotificationCenter.default.post(name: .calloutDelayIntervalChanged,
+                                            object: self,
+                                            userInfo: [Keys.interval: clampedValue])
+        }
+    }
+
     var automaticCalloutsEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.automaticCalloutsEnabled)
         }
         set(newValue) {
             userDefaults.set(newValue, forKey: Keys.automaticCalloutsEnabled)
-            
-            NotificationCenter.default.post(name: .automaticCalloutsEnabledChanged, object: self, userInfo: [Keys.enabled: newValue])
+
+            NotificationCenter.default.post(name: .automaticCalloutsEnabledChanged,
+                                            object: self,
+                                            userInfo: [Keys.enabled: newValue])
         }
     }
-    
+
     var shakeCalloutsEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.shakeCalloutsEnabled)
         }
         set(newValue) {
             userDefaults.set(newValue, forKey: Keys.shakeCalloutsEnabled)
-            NotificationCenter.default.post(name: .shakeCalloutsEnabledChanged, object: self, userInfo: [Keys.enabled: newValue])
+            NotificationCenter.default.post(name: .shakeCalloutsEnabledChanged,
+                                            object: self,
+                                            userInfo: [Keys.enabled: newValue])
         }
     }
-    
+
     var placeSenseEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.sensePlace)
@@ -477,7 +501,7 @@ extension SettingsContext: AutoCalloutSettingsProvider {
             NotificationCenter.default.post(name: .autoCalloutCategorySenseChanged, object: self)
         }
     }
-    
+
     var landmarkSenseEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.senseLandmark)
@@ -487,7 +511,7 @@ extension SettingsContext: AutoCalloutSettingsProvider {
             NotificationCenter.default.post(name: .autoCalloutCategorySenseChanged, object: self)
         }
     }
-    
+
     var mobilitySenseEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.senseMobility)
@@ -497,7 +521,7 @@ extension SettingsContext: AutoCalloutSettingsProvider {
             NotificationCenter.default.post(name: .autoCalloutCategorySenseChanged, object: self)
         }
     }
-    
+
     var informationSenseEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.senseInformation)
@@ -507,7 +531,7 @@ extension SettingsContext: AutoCalloutSettingsProvider {
             NotificationCenter.default.post(name: .autoCalloutCategorySenseChanged, object: self)
         }
     }
-    
+
     var safetySenseEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.senseSafety)
@@ -517,7 +541,7 @@ extension SettingsContext: AutoCalloutSettingsProvider {
             NotificationCenter.default.post(name: .autoCalloutCategorySenseChanged, object: self)
         }
     }
-    
+
     var intersectionSenseEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.senseIntersection)
@@ -526,7 +550,7 @@ extension SettingsContext: AutoCalloutSettingsProvider {
             userDefaults.set(newValue, forKey: Keys.senseIntersection)
         }
     }
-    
+
     var destinationSenseEnabled: Bool {
         get {
             return userDefaults.bool(forKey: Keys.senseDestination)
@@ -536,21 +560,19 @@ extension SettingsContext: AutoCalloutSettingsProvider {
         }
     }
 }
+
 // MARK: - Convenience utility methods
 extension SettingsContext {
-    /// Export relevant Soundscape settings into a dictionary.  This helper returns a dictionary
-    /// containing all of the user‑tweakable settings maintained by `SettingsContext`.  It can be
-    /// used to persist settings to disk or transmit them across devices.  Only values backed by
-    /// known keys defined in `SettingsContext.Keys` will be included in the exported dictionary.
-    ///
-    /// - Returns: A dictionary where each key corresponds to a user default key and each value is
-    ///            the current value stored in `UserDefaults`.
+    /// Export relevant Soundscape settings into a dictionary. This helper returns a dictionary
+    /// containing all of the user-tweakable settings maintained by `SettingsContext`.
     func exportSettings() -> [String: Any] {
         var settings: [String: Any] = [:]
-        // List all keys that should be exported. Adding a key here will include it in export.
+
         let exportKeys: [String] = [
             Keys.calloutSoundsEnabled,
             Keys.calloutDelayEnabled,
+            Keys.calloutDelayInterval,
+
             Keys.appUseCount,
             Keys.newFeaturesLastDisplayedVersion,
             Keys.metricUnits,
@@ -584,172 +606,251 @@ extension SettingsContext {
             Keys.apnsDeviceToken,
             Keys.pushNotificationTags
         ]
+
         for key in exportKeys {
-            // If the object exists in user defaults, include it in the export dictionary
             if let value = userDefaults.object(forKey: key) {
                 settings[key] = value
             }
         }
+
         return settings
     }
 
-    /// Import settings previously exported using `exportSettings()`.  Any keys that match those
-    /// defined in `SettingsContext.Keys` will be applied to `UserDefaults` and trigger the
-    /// associated property observers (for example, posting notifications).  Keys not recognised by
-    /// this context are ignored.
-    ///
-    /// - Parameter settings: A dictionary of key/value pairs representing user defaults to apply.
+    private func boolValue(from value: Any) -> Bool? {
+        if let value = value as? Bool {
+            return value
+        }
+
+        if let value = value as? NSNumber {
+            return value.boolValue
+        }
+
+        return nil
+    }
+
+    private func intValue(from value: Any) -> Int? {
+        if let value = value as? Int {
+            return value
+        }
+
+        if let value = value as? NSNumber {
+            return value.intValue
+        }
+
+        return nil
+    }
+
+    private func floatValue(from value: Any) -> Float? {
+        if let value = value as? Float {
+            return value
+        }
+
+        if let value = value as? NSNumber {
+            return value.floatValue
+        }
+
+        return nil
+    }
+
+    private func doubleValue(from value: Any) -> Double? {
+        if let value = value as? Double {
+            return value
+        }
+
+        if let value = value as? NSNumber {
+            return value.doubleValue
+        }
+
+        return nil
+    }
+
+    /// Import settings previously exported using `exportSettings()`.
     func importSettings(_ settings: [String: Any]) {
         for (key, value) in settings {
             switch key {
             case Keys.calloutSoundsEnabled:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.calloutSoundsEnabled = boolValue
                 }
+
             case Keys.calloutDelayEnabled:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.calloutDelayEnabled = boolValue
                 }
+
+            case Keys.calloutDelayInterval:
+                if let doubleValue = doubleValue(from: value) {
+                    self.calloutDelayInterval = doubleValue
+                }
+
             case Keys.appUseCount:
-                if let intValue = value as? Int {
+                if let intValue = intValue(from: value) {
                     self.appUseCount = intValue
                 }
+
             case Keys.newFeaturesLastDisplayedVersion:
                 if let stringValue = value as? String {
                     self.newFeaturesLastDisplayedVersion = stringValue
                 }
+
             case Keys.metricUnits:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.metricUnits = boolValue
                 }
+
             case Keys.locale:
                 if let identifier = value as? String {
                     self.locale = Locale(identifier: identifier)
                 } else {
                     self.locale = nil
                 }
+
             case Keys.voiceID:
                 self.voiceId = value as? String
+
             case Keys.speakingRate:
-                if let floatValue = value as? Float {
+                if let floatValue = floatValue(from: value) {
                     self.speakingRate = floatValue
                 }
+
             case Keys.beaconVolume:
-                if let floatValue = value as? Float {
+                if let floatValue = floatValue(from: value) {
                     self.beaconVolume = floatValue
                 }
+
             case Keys.ttsVolume:
-                if let floatValue = value as? Float {
+                if let floatValue = floatValue(from: value) {
                     self.ttsVolume = floatValue
                 }
+
             case Keys.otherVolume:
-                if let floatValue = value as? Float {
+                if let floatValue = floatValue(from: value) {
                     self.otherVolume = floatValue
                 }
+
             case Keys.telemetryOptout:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.telemetryOptout = boolValue
                 }
+
             case Keys.selectedBeaconName:
                 if let stringValue = value as? String {
                     self.selectedBeacon = stringValue
                 }
+
             case Keys.useOldBeacon:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.userDefaults.set(boolValue, forKey: key)
                 }
+
             case Keys.playBeaconStartEndMelody:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.playBeaconStartAndEndMelodies = boolValue
                 }
+
             case Keys.automaticCalloutsEnabled:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.automaticCalloutsEnabled = boolValue
                 }
+
             case Keys.shakeCalloutsEnabled:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.shakeCalloutsEnabled = boolValue
                 }
+
             case Keys.sensePlace:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.placeSenseEnabled = boolValue
                 }
+
             case Keys.senseLandmark:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.landmarkSenseEnabled = boolValue
                 }
+
             case Keys.senseMobility:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.mobilitySenseEnabled = boolValue
                 }
+
             case Keys.senseInformation:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.informationSenseEnabled = boolValue
                 }
+
             case Keys.senseSafety:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.safetySenseEnabled = boolValue
                 }
+
             case Keys.senseIntersection:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.intersectionSenseEnabled = boolValue
                 }
+
             case Keys.senseDestination:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.destinationSenseEnabled = boolValue
                 }
+
             case Keys.previewIntersectionsIncludeUnnamedRoads:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.previewIntersectionsIncludeUnnamedRoads = boolValue
                 }
+
             case Keys.audioSessionMixesWithOthers:
-                if let boolValue = value as? Bool {
+                if let boolValue = boolValue(from: value) {
                     self.audioSessionMixesWithOthers = boolValue
                 }
+
             case Keys.markerSortStyle:
-                if let rawValue = value as? String, let sort = SortStyle(rawValue: rawValue) {
+                if let rawValue = value as? String,
+                   let sort = SortStyle(rawValue: rawValue) {
                     self.defaultMarkerSortStyle = sort
                 }
+
             case Keys.leaveImmediateVicinityDistance:
-                if let doubleValue = value as? Double {
+                if let doubleValue = doubleValue(from: value) {
                     self.leaveImmediateVicinityDistance = doubleValue
                 }
+
             case Keys.enterImmediateVicinityDistance:
-                if let doubleValue = value as? Double {
+                if let doubleValue = doubleValue(from: value) {
                     self.enterImmediateVicinityDistance = doubleValue
                 }
+
             case Keys.ttsGain:
-                if let floatValue = value as? Float {
+                if let floatValue = floatValue(from: value) {
                     self.ttsGain = floatValue
                 }
+
             case Keys.beaconGain:
-                if let floatValue = value as? Float {
+                if let floatValue = floatValue(from: value) {
                     self.beaconGain = floatValue
                 }
+
             case Keys.afxGain:
-                if let floatValue = value as? Float {
+                if let floatValue = floatValue(from: value) {
                     self.afxGain = floatValue
                 }
+
             case Keys.apnsDeviceToken:
                 if let data = value as? Data {
                     self.apnsDeviceToken = data
                 }
+
             case Keys.pushNotificationTags:
                 if let array = value as? [String] {
                     self.pushNotificationTags = Set(array)
                 }
+
             default:
-                // Ignore unknown keys
                 continue
             }
         }
     }
 
-    /// Toggle all sense categories on or off with a single call.  Setting this property will update
-    /// the individual sense settings (place, landmark, mobility, information, safety, intersection,
-    /// and destination) and post the appropriate notifications.
-    ///
-    /// - Parameter enabled: A Boolean value indicating whether all sense categories should be enabled.
+    /// Toggle all sense categories on or off with a single call.
     func setAllSensesEnabled(_ enabled: Bool) {
         self.placeSenseEnabled = enabled
         self.landmarkSenseEnabled = enabled
@@ -760,13 +861,13 @@ extension SettingsContext {
         self.destinationSenseEnabled = enabled
     }
 
-    /// Reset all user‑tweakable settings to their default values.  This method removes each
-    /// supported key from `UserDefaults` so that the default values (registered in the initializer)
-    /// are used the next time the values are read.
+    /// Reset all user-tweakable settings to their default values.
     func resetToDefaults() {
         let keysToReset: [String] = [
             Keys.calloutSoundsEnabled,
             Keys.calloutDelayEnabled,
+            Keys.calloutDelayInterval,
+
             Keys.appUseCount,
             Keys.newFeaturesLastDisplayedVersion,
             Keys.metricUnits,
@@ -800,10 +901,11 @@ extension SettingsContext {
             Keys.apnsDeviceToken,
             Keys.pushNotificationTags
         ]
+
         for key in keysToReset {
             userDefaults.removeObject(forKey: key)
         }
-        // Reset any cached values such as locale
+
         _locale = nil
     }
 }
