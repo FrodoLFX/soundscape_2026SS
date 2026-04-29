@@ -73,6 +73,8 @@ struct DestinationCallout: POICalloutProtocol {
         
         let markerLocation = marker.closestLocation(from: location)
         
+        if origin == .auto && SettingsContext.shared.calloutHapticsEnabled {
+            CalloutHapticFeedback.play()
         switch origin {
         case .auto, .beaconChanged, .preview:
             var sounds = [Sound]()

@@ -53,6 +53,8 @@ struct IntersectionCallout: CalloutProtocol {
             return Sounds.empty
         }
         
+        if origin == .auto && SettingsContext.shared.calloutHapticsEnabled {
+            CalloutHapticFeedback.play()
         // Construct the output phrase
         var sounds: [Sound] = []
         

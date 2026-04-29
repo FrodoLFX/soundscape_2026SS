@@ -117,6 +117,11 @@ struct POICallout: POICalloutProtocol {
         guard let location = location ?? self.location, let poi = poi else {
             return Sounds.empty
         }
+        let isAutoCallout = !includeDistance && !isRepeat
+            if isAutoCallout && SettingsContext.shared.calloutHapticsEnabled {
+                CalloutHapticFeedback.play()
+            }
+        
         var sounds = [Sound]()
         let isAutoCallout = !includeDistance && !isRepeat
         let prefixEnabled = isAutoCallout ? SettingsContext.shared.autoCalloutSoundsEnabled
