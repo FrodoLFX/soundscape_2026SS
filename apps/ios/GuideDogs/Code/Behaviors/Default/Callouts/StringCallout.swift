@@ -26,7 +26,8 @@ class StringCallout: CalloutProtocol {
     }
     
     var includePrefixSound: Bool {
-        return SettingsContext.shared.calloutSoundsEnabled
+        return origin == .auto ? SettingsContext.shared.autoCalloutSoundsEnabled
+                               : SettingsContext.shared.calloutSoundsEnabled
     }
     
     var prefixSound: Sound? {
@@ -65,7 +66,6 @@ class StringCallout: CalloutProtocol {
             if let glyph = glyph {
                 sounds.append(GlyphSound(glyph, compass: position))
             }
-            
             sounds.append(TTSSound(callout, compass: position))
         } else if let location = location {
             if let glyph = glyph {
@@ -80,6 +80,21 @@ class StringCallout: CalloutProtocol {
             
             sounds.append(TTSSound(callout))
         }
+        if let glyph = glyph, includePrefixSound {
+            sounds.append(GlyphSound(glyph, compass: position))
+        }
+        sounds.append(TTSSound(callout, compass: position))
+    } else if let location = location {
+        if let glyph = glyph, includePrefixSound {
+            sounds.append(GlyphSound(glyph, at: location))
+        }
+        sounds.append(TTSSound(callout, at: location))
+    } else {
+        if let glyph = glyph, includePrefixSound {
+            sounds.append(GlyphSound(glyph))
+        }
+        sounds.append(TTSSound(callout))
+    }
         
         return Sounds(sounds)
     }

@@ -26,7 +26,8 @@ struct IntersectionCallout: CalloutProtocol {
     }
     
     var includePrefixSound: Bool {
-        return SettingsContext.shared.calloutSoundsEnabled
+        return origin == .auto ? SettingsContext.shared.autoCalloutSoundsEnabled
+                               : SettingsContext.shared.calloutSoundsEnabled
     }
     
     var prefixSound: Sound? {

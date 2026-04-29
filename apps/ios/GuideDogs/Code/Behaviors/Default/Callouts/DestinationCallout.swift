@@ -24,7 +24,9 @@ struct DestinationCallout: POICalloutProtocol {
     }
     
     var includePrefixSound: Bool {
-        return SettingsContext.shared.calloutSoundsEnabled
+        // 自动播报使用新的自动前缀音开关，其余使用全局开关
+        return origin == .auto ? SettingsContext.shared.autoCalloutSoundsEnabled
+                               : SettingsContext.shared.calloutSoundsEnabled
     }
     
     var prefixSound: Sound? {

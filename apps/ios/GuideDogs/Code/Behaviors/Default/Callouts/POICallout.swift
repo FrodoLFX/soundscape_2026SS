@@ -117,7 +117,12 @@ struct POICallout: POICalloutProtocol {
         guard let location = location ?? self.location, let poi = poi else {
             return Sounds.empty
         }
-        
+        var sounds = [Sound]()
+        let isAutoCallout = !includeDistance && !isRepeat
+        let prefixEnabled = isAutoCallout ? SettingsContext.shared.autoCalloutSoundsEnabled
+                                          : SettingsContext.shared.calloutSoundsEnabled
+        if includePrefixSound && prefixEnabled {
+            sounds.append(GlyphSound(category.glyph, at: soundLocation))
         let distance: CLLocationDistance
         let name: String
         let category: SuperCategory

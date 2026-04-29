@@ -24,6 +24,7 @@ extension Notification.Name {
     static let calloutSoundsEnabledChanged = Notification.Name("GDACalloutSoundsEnabledChanged")
     static let calloutDelayEnabledChanged = Notification.Name("GDACalloutDelayEnabledChanged")
     static let calloutDelayIntervalChanged = Notification.Name("GDACalloutDelayIntervalChanged")
+    static let autoCalloutSoundsEnabledChanged = Notification.Name("GDAAutoCalloutSoundsEnabledChanged")
 }
 
 class SettingsContext {
@@ -76,6 +77,10 @@ class SettingsContext {
 
         static let enabled = "GDAEnabled"
         static let interval = "GDACalloutDelayIntervalValue"
+        fileprivate static let autoCalloutSoundsEnabled = "GDAAutoCalloutSoundsEnabled"
+        // MARK: Notification Keys
+        static let enabled = "GDAEnabled"
+        static let interval = "GDACalloutDelayIntervalValue"
     }
 
     // MARK: Shared Instance
@@ -125,6 +130,10 @@ class SettingsContext {
             Keys.markerSortStyle: SortStyle.distance.rawValue,
             Keys.leaveImmediateVicinityDistance: 30.0,
             Keys.enterImmediateVicinityDistance: 15.0
+            Keys.calloutSoundsEnabled: true,
+            Keys.calloutDelayEnabled: true,
+            Keys.calloutDelayInterval: 1.5,
+            Keys.autoCalloutSoundsEnabled: true
         ])
 
         resetLocaleIfNeeded()
@@ -563,6 +572,17 @@ extension SettingsContext: AutoCalloutSettingsProvider {
 
 // MARK: - Convenience utility methods
 extension SettingsContext {
+    var autoCalloutSoundsEnabled: Bool {
+        get {
+            return userDefaults.bool(forKey: Keys.autoCalloutSoundsEnabled)
+        }
+        set {
+            userDefaults.set(newValue, forKey: Keys.autoCalloutSoundsEnabled)
+            NotificationCenter.default.post(name: .autoCalloutSoundsEnabledChanged,
+                                            object: self,
+                                            userInfo: [Keys.enabled: newValue])
+        }
+    }
     /// Export relevant Soundscape settings into a dictionary. This helper returns a dictionary
     /// containing all of the user-tweakable settings maintained by `SettingsContext`.
     func exportSettings() -> [String: Any] {
