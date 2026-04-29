@@ -84,6 +84,22 @@ class HomeViewController: UIViewController {
         return icon
     }()
     
+    private lazy var savedWalksBarButtonItem: UIBarButtonItem = {
+        // 使用系统图标 list.bullet，也可以换成自定义图片名
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "list.bullet"),
+            style: .plain,
+            target: self,
+            action: #selector(openSavedWalks)
+        )
+        // 无障碍标签，需在本地化文件加入 bar_icon.saved_walks.acc_label
+        item.accessibilityLabel = GDLocalizedString("bar_icon.saved_walks.acc_label")
+        return item
+    }()
+    @objc private func openSavedWalks() {
+        let vc = SavedWalksViewController()
+        navigationController?.pushViewController(vc, animated: true)
+    
     private var searchController: UISearchController?
     
     // Experiences
@@ -124,6 +140,13 @@ class HomeViewController: UIViewController {
         // Add search controller to navigation bar
         configureSearchAndBrowseView()
         self.navigationItem.hidesSearchBarWhenScrolling = false
+        if let existingItems = navigationItem.rightBarButtonItems, !existingItems.isEmpty {
+            navigationItem.rightBarButtonItems = existingItems + [savedWalksBarButtonItem]
+        } else if let existingItem = navigationItem.rightBarButtonItem {
+            navigationItem.rightBarButtonItems = [existingItem, savedWalksBarButtonItem]
+        } else {
+            navigationItem.rightBarButtonItem = savedWalksBarButtonItem
+        }
 
         // Don't allow ios 26 to move the search to the bottom.
         if #available(iOS 26.0, *) {
