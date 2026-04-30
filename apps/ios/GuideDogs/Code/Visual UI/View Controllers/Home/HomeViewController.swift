@@ -84,6 +84,23 @@ class HomeViewController: UIViewController {
         return icon
     }()
     
+    private lazy var voiceNotesBarButtonItem: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "mic"),
+            style: .plain,
+            target: self,
+            action: #selector(openVoiceNotes)
+        )
+        item.accessibilityLabel = GDLocalizedString("bar_icon.voice_notes.acc_label")
+        return item
+    }()
+
+    /// 点击“语音笔记”按钮时打开语音笔记界面
+    @objc private func openVoiceNotes() {
+        let vc = VoiceNotesViewController()
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     private lazy var savedWalksBarButtonItem: UIBarButtonItem = {
         // 使用系统图标 list.bullet，也可以换成自定义图片名
         let item = UIBarButtonItem(
@@ -98,7 +115,7 @@ class HomeViewController: UIViewController {
     }()
     @objc private func openSavedWalks() {
         let vc = SavedWalksViewController()
-        navigationController?.pushViewController(vc, animated: true)
+        navigationController?.pushViewController(vc, animated: true)}
     
     private var searchController: UISearchController?
     
@@ -131,7 +148,9 @@ class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        var rightItems = navigationItem.rightBarButtonItems ?? []
+            rightItems.append(voiceNotesBarButtonItem)
+            navigationItem.rightBarButtonItems = rightItems
         // Initialize the search controller
         self.searchController = UISearchController(delegate: self)
         self.searchController?.delegate = self
