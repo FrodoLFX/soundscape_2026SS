@@ -84,6 +84,25 @@ class HomeViewController: UIViewController {
         return icon
     }()
     
+    private lazy var voiceCommandsBarButtonItem: UIBarButtonItem = {
+        // 采用系统图标 questionmark.bubble，表示帮助/指令
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "questionmark.bubble"),
+            style: .plain,
+            target: self,
+            action: #selector(openVoiceCommands)
+        )
+        // 为 VoiceOver 设置无障碍标签（需在本地化文件中添加 bar_icon.voice_commands.acc_label）
+        item.accessibilityLabel = GDLocalizedString("bar_icon.voice_commands.acc_label")
+        return item
+    }()
+
+    /// 点击语音指令按钮时，打开 VoiceCommandsViewController
+    @objc private func openVoiceCommands() {
+        let vc = VoiceCommandsViewController()
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     private lazy var voiceNotesBarButtonItem: UIBarButtonItem = {
         let item = UIBarButtonItem(
             image: UIImage(systemName: "mic"),
@@ -150,6 +169,7 @@ class HomeViewController: UIViewController {
         super.viewDidLoad()
         var rightItems = navigationItem.rightBarButtonItems ?? []
             rightItems.append(voiceNotesBarButtonItem)
+            rightItems.append(voiceCommandsBarButtonItem)
             navigationItem.rightBarButtonItems = rightItems
         // Initialize the search controller
         self.searchController = UISearchController(delegate: self)
